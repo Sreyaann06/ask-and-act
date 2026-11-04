@@ -69,6 +69,7 @@ frontend/index.html    Chat UI
 - Per-session rate limiting and history summarization
 - Docker setup, and a provider interface for OpenAI/Anthropic
 - Evals to measure tool-selection accuracy
+- Handle ambiguous city names (for example "San Jose") by asking which country or state, instead of using the first geocoding match
 
 ## AI tools used
 - **Claude (claude.ai chat):** my main tool. I used it as a step-by-step guide for setting up the project (Python venv, Git, GitHub), and to draft the first version of each file: the tools, the tool registry, the Gemini agent loop, the FastAPI endpoint and the chat UI. I also pasted error messages and screenshots into it to debug.
