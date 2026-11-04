@@ -69,11 +69,22 @@ frontend/index.html    Chat UI
 - Per-session rate limiting and history summarization
 - Docker setup, and a provider interface for OpenAI/Anthropic
 - Evals to measure tool-selection accuracy
-
 ## AI tools used
-- **Claude (claude.ai chat):** guided me through project setup, drafted the first version of the tools, agent loop, API and UI, and helped me debug errors (Git, venv, API errors).
+- **Claude (claude.ai chat):** my main tool. I used it as a step-by-step guide for setting up the project (Python venv, Git, GitHub), and to draft the first version of each file: the tools, the tool registry, the Gemini agent loop, the FastAPI endpoint and the chat UI. I also pasted error messages and screenshots into it to debug.
 - **VS Code:** editor and terminal.
-- **My workflow:** I asked for one file at a time, ran each tool in isolation before wiring it in, and tested the agent with prompts that should and should not trigger tools. I fixed [describe what you changed or debugged yourself].
+- **Google AI Studio:** to create the Gemini API key.
+
+**How I worked:**
+- I built one file at a time and tested each tool on its own in the terminal before connecting it to the agent.
+- I tested the agent with prompts that should use tools (math, weather, FAQ), chained tools (the Austin temperature question) and no tools (plain chat), and checked the badges and the "Tool calls" view each time.
+- I ran a fresh-clone test in a separate folder to confirm the README setup steps work.
+
+**Problems I debugged along the way:**
+- `.gitignore` was not taking effect, so `.env` showed up in Git. I rewrote the file and confirmed with `git check-ignore`.
+- PowerShell blocked the venv activation script, which I fixed with `Set-ExecutionPolicy`.
+- Gemini returned 503 "high demand" errors, and some model names (such as `gemini-2.5-flash`) were retired (404). This led to retries, a fallback list of models, and a configurable model name in `.env`.
+- The fresh clone gave "API key not valid" because `.env` still held the placeholder.
+- The weather tool failed with an SSL certificate error on my machine. I fixed it with `truststore`, which uses the Windows certificate store.
 ## Troubleshooting
 - **Weather tool shows an SSL certificate error:** some networks and antivirus programs intercept HTTPS. The app uses `truststore` to read the system certificate store, which normally fixes this. Run `pip install -r requirements.txt` again if it is missing.
 - **"AI service unavailable" / 503:** the Gemini model is overloaded. The app retries and falls back to other models automatically. Wait a minute and try again.
