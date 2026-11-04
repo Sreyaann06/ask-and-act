@@ -69,6 +69,7 @@ frontend/index.html    Chat UI
 - Per-session rate limiting and history summarization
 - Docker setup, and a provider interface for OpenAI/Anthropic
 - Evals to measure tool-selection accuracy
+
 ## AI tools used
 - **Claude (claude.ai chat):** my main tool. I used it as a step-by-step guide for setting up the project (Python venv, Git, GitHub), and to draft the first version of each file: the tools, the tool registry, the Gemini agent loop, the FastAPI endpoint and the chat UI. I also pasted error messages and screenshots into it to debug.
 - **VS Code:** editor and terminal.
@@ -85,6 +86,8 @@ frontend/index.html    Chat UI
 - Gemini returned 503 "high demand" errors, and some model names (such as `gemini-2.5-flash`) were retired (404). This led to retries, a fallback list of models, and a configurable model name in `.env`.
 - The fresh clone gave "API key not valid" because `.env` still held the placeholder.
 - The weather tool failed with an SSL certificate error on my machine. I fixed it with `truststore`, which uses the Windows certificate store.
+- The weather tool failed with an SSL certificate error on my machine. I fixed it with `truststore`, which uses the Windows certificate store.
+
 ## Troubleshooting
 - **Weather tool shows an SSL certificate error:** some networks and antivirus programs intercept HTTPS. The app uses `truststore` to read the system certificate store, which normally fixes this. Run `pip install -r requirements.txt` again if it is missing.
 - **"AI service unavailable" / 503:** the Gemini model is overloaded. The app retries and falls back to other models automatically. Wait a minute and try again.
