@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ask-and-Act Agent</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f4f5f7; margin: 0; color: #1f2430; }
+    .app { max-width: 720px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; }
+    header { padding: 16px 20px; background: #1f2430; color: #fff; }
+    header h1 { margin: 0; font-size: 18px; }
+    header p { margin: 4px 0 0; font-size: 13px; opacity: .7; }
+    #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+    .user { align-self: flex-end; background: #3b6cf6; color: #fff; }
+    .bot { align-self: flex-start; background: #fff; border: 1px solid #e1e4ea; }
+    .error { align-self: flex-start; background: #fdecec; border: 1px solid #f5b5b5; color: #8a1c1c; }
+    .badges { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .badge { font-size: 12px; padding: 3px 9px; border-radius: 999px; background: #eef2ff; color: #2c4bc4; border: 1px solid #c9d4fb; }
+    .badge.fail { background: #fdecec; color: #8a1c1c; border-color: #f5b5b5; }
+    details { margin-top: 6px; font-size: 12px; color: #555; }
+    details pre { margin: 4px 0 0; padding: 8px; background: #f4f5f7; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; }
+    .no-tool { margin-top: 8px; font-size: 12px; color: #888; }
+    form { display: flex; gap: 8px; padding: 14px 20px; background: #fff; border-top: 1px solid #e1e4ea; }
+    input { flex: 1; padding: 11px 14px; border: 1px solid #ccd0d9; border-radius: 8px; font-size: 15px; }
+    button { padding: 0 20px; border: 0; border-radius: 8px; background: #3b6cf6; color: #fff; font-size: 15px; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Ask-and-Act Agent</h1>
+      <p>Tools: calculator, weather, NovaCRM knowledge base</p>
+    </header>
+    <div id="messages"></div>
+    <form id="form">
+      <input id="input" placeholder="Ask something..." autocomplete="off" maxlength="2000">
+      <button id="send" type="submit">Send</button>
+    </form>
+  </div>
+
+<script>
+  const messagesEl = document.getElementById("messages");
+  const form = document.getElementById("form");
+  const input = document.getElementById("input");
+  const sendBtn = document.getElementById("send");
+  let sessionId = null;
+
+  const ICONS = { calculate: "🧮", get_weather: "🌤️", search_knowledge_base: "📚" };
+
+  // Shows **bold** text without using innerHTML (keeps it safe from injected HTML)
+  function renderText(el, text) {
+    text.split(/\*\*(.+?)\*\*/g).forEach((part, i) => {
+      if (i % 2) {
+        const b = document.createElement("strong");
+        b.textContent = part;
+        el.appendChild(b);
+      } else {
+        el.appendChild(document.createTextNode(part));
+      }
+    });
+  }
+
+  function addMessage(text, cls, tools) {
+    const div = document.createElement("div");
+    div.className = "msg " + cls;
+    renderText(div, text);
+
+    if (cls === "bot" && tools) {
+      if (tools.length === 0) {
+        const none = document.createElement("div");
+        none.className = "no-tool";
+        none.textContent = "No tools used";
+        div.appendChild(none);
+      } else {
+        const badges = document.createElement("div");
+        badges.className = "badges";
+        tools.forEach((t) => {
+          const b = document.createElement("span");
+          const failed = t.result && t.result.error;
+          b.className = "badge" + (failed ? " fail" : "");
+          b.textContent = (ICONS[t.name] || "🔧") + " " + t.name;
+          badges.appendChild(b);
+        });
+        div.appendChild(badges);
+
+        const details = document.createElement("details");
+        const summary = document.createElement("summary");
+        summary.textContent = "Tool calls";
+        const pre = document.createElement("pre");
+        pre.textContent = JSON.stringify(tools, null, 2);
+        details.append(summary, pre);
+        div.appendChild(details);
+      }
+    }
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  addMessage("Hi! Ask me a question. Try: What is 15% of the high temperature in Austin today?", "bot", null);
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+
+    addMessage(text, "user");
+    input.value = "";
+    sendBtn.disabled = true;
+    const thinking = addMessage("Thinking...", "bot", null);
+
+    try {
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, message: text }),
+      });
+      const data = await res.json();
+      thinking.remove();
+      if (data.session_id) sessionId = data.session_id;
+
+      if (!res.ok) {
+        addMessage(data.error || "Something went wrong.", "error");
+      } else {
+        addMessage(data.answer, "bot", data.tools_used);
+      }
+    } catch (err) {
+      thinking.remove();
+      addMessage("Could not reach the server. Is it running?", "error");
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  });
+</script>
+</body>
+</html>
