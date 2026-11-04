@@ -71,7 +71,10 @@ frontend/index.html    Chat UI
 - Evals to measure tool-selection accuracy
 
 ## AI tools used
-<!-- EDIT THIS SECTION so it describes what you actually did. -->
 - **Claude (claude.ai chat):** guided me through project setup, drafted the first version of the tools, agent loop, API and UI, and helped me debug errors (Git, venv, API errors).
 - **VS Code:** editor and terminal.
 - **My workflow:** I asked for one file at a time, ran each tool in isolation before wiring it in, and tested the agent with prompts that should and should not trigger tools. I fixed [describe what you changed or debugged yourself].
+## Troubleshooting
+- **Weather tool shows an SSL certificate error:** some networks and antivirus programs intercept HTTPS. The app uses `truststore` to read the system certificate store, which normally fixes this. Run `pip install -r requirements.txt` again if it is missing.
+- **"AI service unavailable" / 503:** the Gemini model is overloaded. The app retries and falls back to other models automatically. Wait a minute and try again.
+- **"API key not valid":** check that `.env` contains your real key, then restart the server, since `.env` is only read at startup.
