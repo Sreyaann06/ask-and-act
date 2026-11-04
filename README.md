@@ -86,7 +86,6 @@ frontend/index.html    Chat UI
 - Gemini returned 503 "high demand" errors, and some model names (such as `gemini-2.5-flash`) were retired (404). This led to retries, a fallback list of models, and a configurable model name in `.env`.
 - The fresh clone gave "API key not valid" because `.env` still held the placeholder.
 - The weather tool failed with an SSL certificate error on my machine. I fixed it with `truststore`, which uses the Windows certificate store.
-- The weather tool failed with an SSL certificate error on my machine. I fixed it with `truststore`, which uses the Windows certificate store.
 
 ## Troubleshooting
 - **Weather tool shows an SSL certificate error:** some networks and antivirus programs intercept HTTPS. The app uses `truststore` to read the system certificate store, which normally fixes this. Run `pip install -r requirements.txt` again if it is missing.
