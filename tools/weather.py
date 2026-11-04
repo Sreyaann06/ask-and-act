@@ -1,3 +1,8 @@
+try:
+    import truststore
+    truststore.inject_into_ssl()  # use the Windows certificate store
+except ImportError:
+    pass
 import requests
 
 GEO_URL = "https://geocoding-api.open-meteo.com/v1/search"
